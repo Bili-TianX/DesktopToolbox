@@ -1,0 +1,14 @@
+<style>
+  .indicator {
+    color: gray;
+  }
+</style>
+
+<div>
+  <h4>{{ word }}</h4>
+  <p>{% if desc %} {{desc}} {% else %} 暂无描述 {% endif %}</p>
+
+  <a href="{{ rawUrl }}">查看更多</a>
+
+  <p class="indicator">{{ i + 1 }} / {{ total }}</p>
+</div>

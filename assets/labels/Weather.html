@@ -1,0 +1,15 @@
+<span>
+  <h4>
+    {{ date }} | 周{{ { '1':'一', '2':'二', '3':'三', '4':'四', '5':'五',
+    '6':'六', '7':'日', }[week] }}
+  </h4>
+  <div>
+    <div>
+      昼 | {{ dayweather }} | {{ daytemp }} ℃ | {{ daywind }}风 {{ daypower }}级
+    </div>
+    <div>
+      夜 | {{ nightweather }} | {{ nighttemp }} ℃ | {{ nightwind }}风 {{
+      nightpower }}级
+    </div>
+  </div>
+</span>
