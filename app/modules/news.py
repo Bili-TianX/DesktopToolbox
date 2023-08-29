@@ -8,46 +8,56 @@ import requests
 from jinja2 import Template
 from PySide2.QtCore import QSettings, Qt
 from PySide2.QtGui import QContextMenuEvent, QIcon
-from PySide2.QtWidgets import (QAction, QDialog, QFormLayout, QHBoxLayout,
-                               QLabel, QLineEdit, QMenu, QPushButton,
-                               QVBoxLayout, QWidget)
+from PySide2.QtWidgets import (
+    QAction,
+    QDialog,
+    QFormLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from .config import DEFAULT_NEWS_SWITCH_DELAY, DEFAULT_NEWS_UPDATE_DELAY
-from .core import BaseModule, MyValidator
+from .core import BaseModule, DelayValidator
 
-with open('./assets/labels/News.html', 'r', encoding='utf-8') as f:
+with open("./assets/labels/News.html", "r", encoding="utf-8") as f:
     TEMPLATE = Template(f.read())
 
 
 def get_news() -> typing.Iterable[dict]:
-    res = requests.get('https://top.baidu.com/board?tab=realtime')
+    res = requests.get("https://top.baidu.com/board?tab=realtime")
     assert res.status_code == 200
 
     return json.loads(
-        unquote(re.findall(r'<!--s-data:(.*?)-->', res.text, re.DOTALL)[0])
-    )['data']['cards'][0]['content']
+        unquote(re.findall(r"<!--s-data:(.*?)-->", res.text, re.DOTALL)[0])
+    )["data"]["cards"][0]["content"]
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent: QWidget, update_delay: float, switch_delay: float) -> None:
+    def __init__(
+        self, parent: QWidget, update_delay: float, switch_delay: float
+    ) -> None:
         super().__init__(parent)
-        self.setWindowTitle('Settings')
+        self.setWindowTitle("Settings")
+        self.setWindowIcon(QIcon("assets/images/settings.svg"))
 
-        self.title_label = QLabel('<h4>Settings</h4>', self)
+        self.title_label = QLabel("<h4>Settings</h4>", self)
         self.update_delay_input = QLineEdit(str(update_delay), self)
         self.switch_delay_input = QLineEdit(str(switch_delay), self)
-        self.confirm_button = QPushButton('Confirm', self)
-        self.cancel_button = QPushButton('Cancel', self)
+        self.confirm_button = QPushButton("Confirm", self)
+        self.cancel_button = QPushButton("Cancel", self)
 
         self.title_label.setAlignment(Qt.AlignCenter)
-        self.update_delay_input.setValidator(
-            MyValidator(self.update_delay_input))
-        self.switch_delay_input.setValidator(
-            MyValidator(self.switch_delay_input))
+        self.update_delay_input.setValidator(DelayValidator(self.update_delay_input))
+        self.switch_delay_input.setValidator(DelayValidator(self.switch_delay_input))
 
         self.form = QFormLayout()
-        self.form.addRow('Update Delay', self.update_delay_input)
-        self.form.addRow('Switch Delay', self.switch_delay_input)
+        self.form.addRow("Update Delay", self.update_delay_input)
+        self.form.addRow("Switch Delay", self.switch_delay_input)
 
         self.button_layout = QHBoxLayout()
         self.button_layout.addWidget(self.confirm_button)
@@ -64,7 +74,7 @@ class SettingsDialog(QDialog):
 
 class NewsModule(BaseModule):
     def __init__(self) -> None:
-        super().__init__('News')
+        super().__init__("News")
         self.setContextMenuPolicy(Qt.DefaultContextMenu)
         self.setMinimumWidth(480)
 
@@ -83,20 +93,23 @@ class NewsModule(BaseModule):
         self.menu = QMenu(self)
 
         self.settings_action = QAction(
-            QIcon('assets/images/settings.svg'), 'Settings',  self.menu)
+            QIcon("assets/images/settings.svg"), "Settings", self.menu
+        )
         self.settings_action.triggered.connect(self.onSettingsAction)
 
-        self.menu.addActions((self.settings_action, ))
+        self.menu.addActions((self.settings_action,))
 
     def load(self, settings: QSettings):
         self.SWITCH_DELAY: float = settings.value(
-            f'{self.name}/switch_delay', DEFAULT_NEWS_SWITCH_DELAY, float)  # type: ignore
+            f"{self.name}/switch_delay", DEFAULT_NEWS_SWITCH_DELAY, float
+        )  # type: ignore
         self.UPDATE_DELAY: float = settings.value(
-            f'{self.name}/update_delay', DEFAULT_NEWS_UPDATE_DELAY, float)  # type: ignore
+            f"{self.name}/update_delay", DEFAULT_NEWS_UPDATE_DELAY, float
+        )  # type: ignore
 
     def save(self, settings: QSettings):
-        settings.setValue(f'{self.name}/switch_delay', self.SWITCH_DELAY)
-        settings.setValue(f'{self.name}/update_delay', self.UPDATE_DELAY)
+        settings.setValue(f"{self.name}/switch_delay", self.SWITCH_DELAY)
+        settings.setValue(f"{self.name}/update_delay", self.UPDATE_DELAY)
 
     def update_news(self):
         self.last_update_time = time.time()
@@ -109,20 +122,18 @@ class NewsModule(BaseModule):
         try:
             news = get_news()
         except AssertionError as e:
-            self.labels.append(f'错误: {e}')
+            self.labels.append(f"错误: {e}")
             return
 
-        for (i, new) in enumerate(news):
-            new.update({'i': i, 'total': len(news)})  # type: ignore
+        for i, new in enumerate(news):
+            new.update({"i": i, "total": len(news)})  # type: ignore
             self.labels_content.append(TEMPLATE.render(new))
         self.update_success = True
         self.switch_news(0)
 
     def switch_news(self, idx: typing.Optional[int] = None):
         self.last_switch_time = time.time()
-        self.idx = idx \
-            if idx is not None \
-            else (self.idx + 1) % len(self.labels_content)
+        self.idx = idx if idx is not None else (self.idx + 1) % len(self.labels_content)
         self.label.setText(self.labels_content[self.idx])
 
     def tick(self):

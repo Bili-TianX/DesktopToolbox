@@ -8,8 +8,8 @@ from .widgets import MainWindow
 
 def main() -> typing.NoReturn:
     _ = QApplication()
-    QApplication.setWindowIcon(QIcon('assets/images/icon.svg'))
-    QApplication.setFont(QFont('新宋体', 12))
+    QApplication.setWindowIcon(QIcon("assets/images/icon.svg"))
+    QApplication.setFont(QFont("新宋体", 12))
 
     w = MainWindow()
 

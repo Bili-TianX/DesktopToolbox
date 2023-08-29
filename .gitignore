@@ -1,4 +1,5 @@
 /.vscode
 /venv
 /settings.ini
+/countdown.db
 __pycache__

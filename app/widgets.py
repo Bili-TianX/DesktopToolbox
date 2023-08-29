@@ -1,7 +1,6 @@
 from PySide2.QtCore import QTimer
 from PySide2.QtGui import QCloseEvent, QIcon, Qt
-from PySide2.QtWidgets import (QAction, QApplication, QMenu, QSystemTrayIcon,
-                               QWidget)
+from PySide2.QtWidgets import QAction, QApplication, QMenu, QSystemTrayIcon, QWidget
 
 from .modules.core import ModuleContainer
 from .modules.countdown import CountdownModule
@@ -11,15 +10,16 @@ from .modules.weather import WeatherModule
 
 class MainWindow(QWidget):
     def __init__(self) -> None:
-        super().__init__(None, Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnBottomHint)
-        self.setWindowTitle('DesktopToolbox')
+        super().__init__(
+            None, Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnBottomHint
+        )
+        self.setWindowTitle("DesktopToolbox")
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setFixedSize(QApplication.primaryScreen().size())
         self.move(0, 0)
 
         self.menu = QMenu(self)
-        self.exit_action = QAction(
-            QIcon('assets/images/exit.svg'), 'Exit', self.menu)
+        self.exit_action = QAction(QIcon("assets/images/exit.svg"), "Exit", self.menu)
         self.exit_action.triggered.connect(self.onExitAction)
         self.menu.addAction(self.exit_action)
 
